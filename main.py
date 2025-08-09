@@ -109,24 +109,27 @@ def has_main_moderator_role():
 
 async def log_command(ctx, command_name, details=""):
     """Log command usage to the configured log channel."""
-    log_channel = bot.get_channel(MODERATION_CONFIG["log_channel_id"])
-    if log_channel:
-        embed = discord.Embed(
-            title="🔧 Command Used",
-            color=0x00ff00,
-            timestamp=datetime.datetime.utcnow()
-        )
-        embed.add_field(name="Command", value=f"`{command_name}`", inline=True)
-        embed.add_field(name="User", value=ctx.author.mention, inline=True)
-        embed.add_field(name="Channel", value=ctx.channel.mention, inline=True)
-        if details:
-            embed.add_field(name="Details", value=details, inline=False)
-        embed.set_footer(text="♠️ BLACK JACK Moderation Logs")
+    try:
+        log_channel = bot.get_channel(MODERATION_CONFIG["log_channel_id"])
+        if log_channel:
+            embed = discord.Embed(
+                title="🔧 Command Used",
+                color=0x00ff00,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Command", value=f"`{command_name}`", inline=True)
+            embed.add_field(name="User", value=ctx.author.mention, inline=True)
+            embed.add_field(name="Channel", value=ctx.channel.mention, inline=True)
+            if details:
+                embed.add_field(name="Details", value=details, inline=False)
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation Logs")
 
-        try:
             await log_channel.send(embed=embed)
-        except:
-            pass
+            print(f"✅ Logged command: {command_name} by {ctx.author}")
+        else:
+            print(f"❌ Log channel not found: {MODERATION_CONFIG['log_channel_id']}")
+    except Exception as e:
+        print(f"❌ Error logging command {command_name}: {e}")
 
 # =================================================================================================
 # BOT EVENTS AND COMMANDS
@@ -287,7 +290,7 @@ async def vc(ctx):
         embed.add_field(name="&vc unlock", value="Unlock your current voice channel", inline=False)
         embed.add_field(name="&vc ban @user", value="Temporarily ban user from your VC", inline=False)
         embed.add_field(name="&vc move @user #channel", value="Move user to another voice channel", inline=False)
-        embed.set_footer(text="♠️ BLACK JACK Moderation")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation")
         await ctx.send(embed=embed)
 
 @vc.command(name='mute')
@@ -444,7 +447,7 @@ async def voice(ctx, action=None, value=None):
                 log_text += f"`{time_str}` 🔄 {log['user'].mention} moved from **{log['from_channel'].name}** to **{log['to_channel'].name}**\n"
 
         embed.description = log_text if log_text else "No recent activity"
-        embed.set_footer(text="♠️ BLACK JACK Voice Logs")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Voice Logs")
         await ctx.send(embed=embed)
         await log_command(ctx, "&voice logs", "Viewed voice channel logs")
 
@@ -457,7 +460,7 @@ async def voice(ctx, action=None, value=None):
         embed.add_field(name="&voice limit <number>", value="Set user limit for your VC", inline=False)
         embed.add_field(name="&vc lock/unlock", value="Lock/unlock your voice channel", inline=False)
         embed.add_field(name="&vc ban @user", value="Temporarily ban user from VC", inline=False)
-        embed.set_footer(text="♠️ BLACK JACK Voice Settings")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Voice Settings")
         await ctx.send(embed=embed)
 
     elif action == "limit" and value:
@@ -605,7 +608,7 @@ class TicketView(discord.ui.View):
                 description=f"Welcome {user.mention}! \n\n📝 **Please describe your issue or question below.**\n\n🔒 This is a private channel only visible to you and our support team.",
                 color=0x00ff00
             )
-            embed.set_footer(text="♠️ BLACK JACK Support Team")
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Support Team")
 
             await ticket_channel.send(embed=embed, view=close_view)
 
@@ -665,7 +668,7 @@ class CloseTicketView(discord.ui.View):
                 description=f"This ticket has been closed by {interaction.user.mention}.\n\n📁 Moved to closed tickets category.",
                 color=0xff0000
             )
-            embed.set_footer(text="♠️ BLACK JACK Support Team")
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Support Team")
 
             # Remove the close button
             await interaction.response.edit_message(embed=embed, view=None)
@@ -690,17 +693,19 @@ async def setup_tickets(ctx):
     if not ticket_channel:
         await ctx.send("❌ Ticket channel not found. Please check the channel ID in the configuration.")
         return
+        return
 
     embed = discord.Embed(
         title="🎫 Support Tickets",
         description=TICKET_CONFIG["ticket_description"],
         color=0x0099ff
     )
-    embed.set_footer(text="♠️ BLACK JACK Support System")
+    embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Support System")
 
     view = TicketView()
     await ticket_channel.send(embed=embed, view=view)
     await ctx.send(f"✅ Ticket system set up in {ticket_channel.mention}")
+    await log_command(ctx, "&setup_tickets", f"Set up ticket system in {ticket_channel.mention}")
 
 @setup_tickets.error
 async def setup_tickets_error(ctx, error):
@@ -730,7 +735,7 @@ async def embed_command(ctx, *, message):
     try:
         await ctx.message.delete()
         embed = discord.Embed(description=message, color=0x0099ff)
-        embed.set_footer(text="♠️ BLACK JACK")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽")
         await ctx.send(embed=embed)
         await log_command(ctx, "&embed", f"Embedded message: {message[:100]}...")
     except discord.Forbidden:
@@ -747,7 +752,7 @@ async def announce_command(ctx, channel: discord.TextChannel, *, message):
             description=message,
             color=0xff6600
         )
-        embed.set_footer(text="♠️ BLACK JACK Announcement")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Announcement")
         await channel.send(embed=embed)
         await log_command(ctx, "&announce", f"Announced in {channel.mention}: {message[:100]}...")
     except discord.Forbidden:
@@ -770,7 +775,7 @@ async def poll_command(ctx, *, content):
             description=f"**{question}**\n\n🇦 {option1}\n🇧 {option2}",
             color=0x00ff00
         )
-        embed.set_footer(text="♠️ BLACK JACK Poll System")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Poll System")
 
         poll_msg = await ctx.send(embed=embed)
         await poll_msg.add_reaction('🇦')
@@ -795,7 +800,7 @@ async def warn_command(ctx, member: discord.Member, *, reason):
         embed.add_field(name="User", value=member.mention, inline=True)
         embed.add_field(name="Moderator", value=ctx.author.mention, inline=True)
         embed.add_field(name="Reason", value=reason, inline=False)
-        embed.set_footer(text="♠️ BLACK JACK Moderation")
+        embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation")
 
         if log_channel:
             await log_channel.send(embed=embed)
@@ -989,7 +994,7 @@ async def nuke_command(ctx):
                 description=f"**{deleted_count}** messages have been deleted from this channel.",
                 color=0x00ff00
             )
-            embed.set_footer(text="♠️ BLACK JACK Moderation")
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation")
             await ctx.send(embed=embed, delete_after=10)
 
             await log_command(ctx, "&nuke", f"Nuked channel {ctx.channel.mention} - {deleted_count} messages deleted")
@@ -1031,7 +1036,7 @@ for command_name in ['say', 'embed', 'announce', 'poll', 'warn', 'dm', 'clear', 
 
 class HelpView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(timeout=None)
 
     @discord.ui.button(label='🎙️ Voice Commands', style=discord.ButtonStyle.primary, custom_id='help_voice')
     async def help_voice(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -1066,7 +1071,7 @@ class HelpView(discord.ui.View):
             inline=False
         )
 
-        embed.set_footer(text="🔒 Voice Commands: Low-level or Main Moderator Role | ♠️ BLACK JACK Moderation")
+        embed.set_footer(text="🔒 Voice Commands: Low-level or Main Moderator Role | ♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation")
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label='⚙️ General Commands', style=discord.ButtonStyle.secondary, custom_id='help_general')
@@ -1113,7 +1118,7 @@ class HelpView(discord.ui.View):
             inline=False
         )
 
-        embed.set_footer(text="🔒 Requires Main Moderator Role | ♠️ BLACK JACK Moderation")
+        embed.set_footer(text="🔒 Requires Main Moderator Role | ♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Moderation")
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label='🎫 Ticket System', style=discord.ButtonStyle.success, custom_id='help_tickets')
@@ -1152,7 +1157,7 @@ class HelpView(discord.ui.View):
             inline=False
         )
 
-        embed.set_footer(text="🔧 Setup required in configuration | ♠️ BLACK JACK Support")
+        embed.set_footer(text="🔧 Setup required in configuration | ♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Support")
         await interaction.response.edit_message(embed=embed, view=self)
 
 # =================================================================================================
@@ -1164,7 +1169,7 @@ async def owner_command(ctx):
     """Display detailed information about the bot owner."""
     embed = discord.Embed(
         title="👑 Bot Owner Information",
-        description="**Meet the creator behind ♠️ BLACK JACK Bot**",
+        description="**Meet the creator behind ♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Bot**",
         color=0xffd700
     )
 
@@ -1192,7 +1197,7 @@ async def owner_command(ctx):
         inline=False
     )
 
-    embed.set_footer(text="♠️ BLACK JACK Bot - Crafted with ❤️ by ᴅᴀᴀᴢᴏ | ʀɪᴏ")
+    embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Bot - Crafted with ❤️ by ᴅᴀᴀᴢᴏ | ʀɪᴏ")
     embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/1234567890123456789.png")  # You can replace with actual owner avatar
 
 # =================================================================================================
@@ -1203,7 +1208,7 @@ async def owner_command(ctx):
 async def help_command(ctx):
     """Interactive help panel with buttons for different command categories."""
     embed = discord.Embed(
-        title="♠️ BLACK JACK BOT - Command Help Panel",
+        title="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 BOT - Command Help Panel",
         description="**Premium Discord Bot for Server Management & Moderation**\n\n🎮 **Select a category below to view detailed commands:**",
         color=0x000000
     )
@@ -1264,13 +1269,47 @@ async def on_ready():
 
 @bot.command(name='balance')
 @has_moderator_role()
-async def balance_command(ctx):
+async def balance_command(ctx, member: discord.Member = None):
     """Check current casino balance."""
-    embed = discord.Embed(
-        title="💰 Casino Balance",
-        description=f"**Current Balance:** ₹{casino_data['balance']:,}",
-        color=0xffd700
-    )
+    if member:
+        # Check another user's balance (for moderation purposes)  
+        embed = discord.Embed(
+            title="💰 Casino Balance Check",
+            description=f"**{member.display_name}'s Balance:** ₹{casino_data['balance']:,}",
+            color=0xffd700
+        )
+        await log_command(ctx, "&balance", f"Checked {member.mention}'s balance: ₹{casino_data['balance']:,}")
+    else:
+        embed = discord.Embed(
+            title="💰 Casino Balance",
+            description=f"**Current Balance:** ₹{casino_data['balance']:,}",
+            color=0xffd700
+        )
+        await log_command(ctx, "&balance", f"Checked own balance: ₹{casino_data['balance']:,}")
+    await ctx.send(embed=embed)
+
+@bot.command(name='resetbalance')
+@has_main_moderator_role()
+async def reset_balance_command(ctx, member: discord.Member, amount: int):
+    """Reset a user's casino balance (Main Moderator only)."""
+    try:
+        await ctx.message.delete()
+        if amount < 0:
+            await ctx.send("❌ Balance amount must be positive!", delete_after=5)
+            return
+
+        old_balance = casino_data['balance']
+        casino_data['balance'] = amount
+
+        embed = discord.Embed(
+            title="💰 Balance Reset",
+            description=f"**{member.display_name}'s balance has been reset**\n\n**Old Balance:** ₹{old_balance:,}\n**New Balance:** ₹{amount:,}",
+            color=0x00ff00
+        )
+        await ctx.send(embed=embed, delete_after=10)
+        await log_command(ctx, "&resetbalance", f"Reset {member.mention}'s balance from ₹{old_balance:,} to ₹{amount:,}")
+    except discord.Forbidden:
+        await ctx.send("❌ I don't have permission to delete messages.")
 
 # =================================================================================================
 # CASINO SYSTEM - BlackJack Statistics Tracker (FINAL CORRECTED VERSION)
@@ -1369,7 +1408,7 @@ class CasinoView(discord.ui.View):
         )
         embed.add_field(name="💰 Current Balance", value=f"₹{casino_data['balance']:,}", inline=True)
         embed.add_field(name="🎮 Session Games", value=f"{len(casino_data['session_games'])}", inline=True)
-        embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()}", inline=True)
+        embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()} minutes", inline=True)
         embed.set_footer(text="♠️ BlackJack Casino | Session in Progress")
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -1665,17 +1704,70 @@ class CasinoView(discord.ui.View):
                 ax1.text(bar.get_x() + bar.get_width()/2., height + max(amounts)*0.01,
                         f'₹{amount:,}', ha='center', va='bottom', color='white', fontsize=8)
 
-            # Bottom chart - Running profit trend
+            # Bottom chart - Running profit trend with individual game details
             ax2.set_facecolor('#36393f')
-            line = ax2.plot(game_numbers, running_profit, color='#ffd700', linewidth=3, marker='o', markersize=6, label='Net Profit')
+            line = ax2.plot(game_numbers, running_profit, color='#ffd700', linewidth=3, marker='o', markersize=8, label='Net Profit')
             ax2.axhline(0, color='white', linestyle='--', linewidth=2, alpha=0.7)
             ax2.fill_between(game_numbers, running_profit, 0, where=[p >= 0 for p in running_profit],
                            color='#00ff41', alpha=0.3, interpolate=True, label='Profit Zone')
             ax2.fill_between(game_numbers, running_profit, 0, where=[p < 0 for p in running_profit],
                            color='#ff4757', alpha=0.3, interpolate=True, label='Loss Zone')
+
+            # Add individual game profit/loss and balance labels at each point
+            starting_balance = casino_data.get('starting_balance', 1000)
+            current_balance = starting_balance
+            
+            for i, (game_num, profit, game) in enumerate(zip(game_numbers, running_profit, games)):
+                # Calculate individual game profit/loss
+                if game["outcome"] == "win":
+                    game_profit = game["amount"]
+                    current_balance += game_profit
+                elif game["outcome"] == "lose":
+                    game_profit = -game["amount"]
+                    current_balance -= game["amount"]
+                elif game["outcome"] == "blackjack":
+                    game_profit = int(game["amount"] * 1.5)
+                    current_balance += game_profit
+                elif game["outcome"] == "tie":
+                    game_profit = 0
+                    # Balance doesn't change for ties
+                elif game["outcome"] == "cashout":
+                    game_profit = game.get("refund_amount", 0) - game.get("lost_amount", 0)
+                    current_balance += game.get("refund_amount", 0) - game.get("lost_amount", 0)
+                else:
+                    game_profit = 0
+                
+                # Add side bet winnings
+                game_profit += game.get("side_bet_winnings", 0)
+                current_balance += game.get("side_bet_winnings", 0)
+                
+                # Create label with profit/loss and total balance
+                if game_profit > 0:
+                    label = f"+₹{game_profit:,}\n(₹{current_balance:,})"
+                    label_color = '#00ff41'
+                elif game_profit < 0:
+                    label = f"-₹{abs(game_profit):,}\n(₹{current_balance:,})"
+                    label_color = '#ff4757'
+                else:
+                    label = f"₹0\n(₹{current_balance:,})"
+                    label_color = '#ffaa00'
+                
+                # Position label above or below the point based on space
+                y_offset = 20 if profit >= 0 else -30
+                ax2.annotate(label, 
+                           xy=(game_num, profit), 
+                           xytext=(0, y_offset), 
+                           textcoords='offset points',
+                           ha='center', 
+                           va='bottom' if profit >= 0 else 'top',
+                           fontsize=8,
+                           color=label_color,
+                           fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.3', facecolor='black', alpha=0.7, edgecolor=label_color))
+
             ax2.set_xlabel('Game Number', color='white', fontweight='bold')
             ax2.set_ylabel('Session Net Profit (₹)', color='white', fontweight='bold')
-            ax2.set_title('📈 Cumulative Profit/Loss Trend', color='#ffd700', fontsize=14, fontweight='bold', pad=15)
+            ax2.set_title('📈 Cumulative Profit/Loss Trend with Game Details', color='#ffd700', fontsize=14, fontweight='bold', pad=15)
             ax2.grid(True, alpha=0.3, linestyle=':')
             ax2.legend(loc='upper left')
 
@@ -1741,7 +1833,7 @@ class GameView(discord.ui.View):
 
     @discord.ui.button(label='🟡 TIE', style=discord.ButtonStyle.secondary, custom_id='game_tie')
     async def game_tie(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.record_game(interaction, "tie", 0)
+        await self.record_game(interaction, "tie", self.bet_amount)
 
     @discord.ui.button(label='🂡 BLACKJACK', style=discord.ButtonStyle.primary, custom_id='game_blackjack')
     async def game_blackjack(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -1758,8 +1850,8 @@ class GameView(discord.ui.View):
             await interaction.response.send_message("❌ Insufficient balance to split!", ephemeral=True)
             return
 
-        # Start split sequence
-        casino_data["balance"] -= self.bet_amount  # Double the bet
+        # Split: deduct additional bet amount for second hand
+        casino_data["balance"] -= self.bet_amount
         casino_data['split_hands_completed'] = 0
 
         embed = discord.Embed(
@@ -1779,7 +1871,7 @@ class GameView(discord.ui.View):
             await interaction.response.send_message("❌ Insufficient balance to double down!", ephemeral=True)
             return
 
-        # Double the bet
+        # Double down: deduct additional bet amount
         casino_data["balance"] -= self.bet_amount
         doubled_amount = self.bet_amount * 2
 
@@ -1827,23 +1919,27 @@ class GameView(discord.ui.View):
         casino_data["session_games"].append(game_data)
         casino_data["games"].append(game_data)
 
-        # Update balance based on outcome
+        # Update balance based on outcome (bet already deducted when placed)
         if outcome == "win":
-            casino_data["balance"] += amount
-            balance_change = f"+₹{amount:,}"
+            # Win: return bet + winnings (2x total)
+            casino_data["balance"] += amount * 2
+            balance_change = f"+₹{amount * 2:,}"
             color = 0x00ff00
             outcome_text = "🟢 WIN"
         elif outcome == "lose":
-            casino_data["balance"] -= amount
+            # Lose: bet already deducted, nothing more to do
             balance_change = f"-₹{amount:,}"
             color = 0xff0000
             outcome_text = "🔴 LOSE"
         elif outcome == "tie":
+            # Tie: return bet amount (push) - bet was already deducted when placed
+            casino_data["balance"] += amount
             balance_change = "₹0 (Push)"
             color = 0xffaa00
             outcome_text = "🟡 TIE"
         elif outcome == "blackjack":
-            payout = int(amount * 1.5)
+            # Blackjack: return bet + 1.5x winnings (2.5x total)
+            payout = int(amount * 2.5)
             casino_data["balance"] += payout
             balance_change = f"+₹{payout:,}"
             color = 0x00ff00
@@ -1982,8 +2078,8 @@ class CashOutModal(discord.ui.Modal):
             )
             embed.add_field(name="💰 New Balance", value=f"₹{casino_data['balance']:,}", inline=True)
             embed.add_field(name="🎮 Session Games", value=f"{len(casino_data['session_games'])}", inline=True)
-            embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()}", inline=True)
-            embed.set_footer(text="♠️ BlackJack Casino")
+            embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()} minutes", inline=True)
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Casino")
             await interaction.response.edit_message(embed=embed, view=view)
         except ValueError:
             await interaction.response.send_message("❌ Please enter a valid number for the amount!", ephemeral=True)
@@ -2013,14 +2109,15 @@ class GameCashOutModal(discord.ui.Modal):
             # Add cashout amount back to balance
             casino_data["balance"] += cashout_amount
 
-            # Remaining amount is lost            remaining_amount = self.bet_amount - cashout_amount
+            # Remaining amount is lost (bet was already deducted)
+            remaining_amount = self.bet_amount - cashout_amount
 
             # Record as a special game outcome
             game_data = {
                 "outcome": "cashout", 
-                "amount": cashout_amount, 
+                "amount": self.bet_amount,  # Record original bet amount
                 "refund_amount": cashout_amount,  # Record cashout amount
-                "lost_amount": remaining_amount,
+                "lost_amount": remaining_amount,  # Record lost amount
                 "timestamp": datetime.now().isoformat()
             }
             casino_data["session_games"].append(game_data)
@@ -2039,8 +2136,8 @@ class GameCashOutModal(discord.ui.Modal):
             )
             embed.add_field(name="💰 New Balance", value=f"₹{casino_data['balance']:,}", inline=True)
             embed.add_field(name="🎮 Session Games", value=f"{len(casino_data['session_games'])}", inline=True)
-            embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()}", inline=True)
-            embed.set_footer(text="♠️ BlackJack Casino")
+            embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()} minutes", inline=True)
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Casino")
             await interaction.response.edit_message(embed=embed, view=view)
         except ValueError:
             await interaction.response.send_message("❌ Please enter a valid number for the amount!", ephemeral=True)
@@ -2073,7 +2170,7 @@ class BalanceModal(discord.ui.Modal):
             embed.add_field(name="💰 Starting Balance", value=f"₹{balance:,}", inline=True)
             embed.add_field(name="🎮 Games Played", value="0", inline=True)
             embed.add_field(name="⏱️ Session Started", value="Just now", inline=True)
-            embed.set_footer(text="♠️ BlackJack Casino | Good luck!")
+            embed.set_footer(text="♠️ 𝙳𝙰𝚂𝙴𝚃𝚃𝙰𝙽 Casino | Good luck!")
             await interaction.response.edit_message(embed=embed, view=view)
         except ValueError:
             await interaction.response.send_message("❌ Please enter a valid number for the balance!", ephemeral=True)
@@ -2125,6 +2222,9 @@ class BetAmountModal(discord.ui.Modal):
             if total_bet > casino_data["balance"]:
                 await interaction.response.send_message(f"❌ Insufficient balance! Total bet: ₹{total_bet:,}, Balance: ₹{casino_data['balance']:,}", ephemeral=True)
                 return
+
+            # DEDUCT BET AMOUNT FROM BALANCE WHEN BET IS PLACED
+            casino_data["balance"] -= main_amount
 
             # Create game view with the bet amount and side bets
             view = GameView(bet_amount=main_amount, side_bets=side_bets)
@@ -2188,6 +2288,8 @@ async def casino_command(ctx):
     try: await ctx.message.delete()
     except discord.Forbidden: pass
 
+    await log_command(ctx, "&casino", "Opened casino interface")
+
     view = CasinoView()
     if casino_data["session_active"]:
         view.play_game.disabled = False
@@ -2197,7 +2299,7 @@ async def casino_command(ctx):
         embed = discord.Embed(title="🎰 BlackJack Casino - Session Active", description="**🎲 Welcome back to your active session!**", color=0x00ff00)
         embed.add_field(name="💰 Current Balance", value=f"₹{casino_data['balance']:,}", inline=True)
         embed.add_field(name="🎮 Session Games", value=f"{len(casino_data['session_games'])}", inline=True)
-        embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()}", inline=True)
+        embed.add_field(name="⏱️ Session Duration", value=f"{get_session_duration()} minutes", inline=True)
     else:
         embed = discord.Embed(title="🎰 BlackJack Casino", description="**Welcome to the premium BlackJack statistics tracker!**\n\nClick 'Start Session' to begin tracking!", color=0xffd700)
         embed.add_field(name="🎲 How it Works", value="1️⃣ Start a session with your balance\n2️⃣ Record each game as WIN or LOSE\n3️⃣ Enter bet amounts for tracking\n4️⃣ View detailed statistics & charts", inline=False)
