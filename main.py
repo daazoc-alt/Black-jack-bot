@@ -22,8 +22,7 @@ MODERATION_CONFIG = {
 # --- CONFIGURATION FOR MENTION RESPONSES ---
 MENTION_CONFIG = {
     "target_member_ids": [
-        123456789012345678,  # Replace with actual member ID 1
-        987654321098765432,  # Replace with actual member ID 2
+        1149592349631057961,  # BlackJack Hero target user
         # Add more member IDs as needed
     ]
 }
@@ -126,27 +125,11 @@ async def on_message(message):
     # Check if any specific target members are mentioned (excluding the bot)
     target_mentions = [mention for mention in message.mentions if mention != bot.user and mention.id in MENTION_CONFIG["target_member_ids"]]
     if target_mentions:
-        mentioned_members = []
-        for member in target_mentions:
-            mentioned_members.append(f"**{member.display_name}** ({member.mention})")
-        
-        if len(mentioned_members) == 1:
-            description = f"👀 I noticed {mentioned_members[0]} was mentioned!\n\n🎰 **ʟᴏʟᴇᴛᴛᴀɴ Casino** is here if you want to track some BlackJack games together!"
-        else:
-            member_list = ", ".join(mentioned_members[:-1]) + f" and {mentioned_members[-1]}"
-            description = f"👀 I noticed {member_list} were mentioned!\n\n🎰 **ʟᴏʟᴇᴛᴛᴀɴ Casino** is here if you want to track some BlackJack games together!"
-        
+        # Custom response for BlackJack hero
         embed = discord.Embed(
-            title="💬 Member Mention Detected!",
-            description=description,
-            color=0x00ff41
+            description="ʜᴇʏʏ..👋🏼 ᴛʜᴀᴛ's ᴏᴜʀ ʙʟᴀᴄᴋᴊᴀᴄᴋ ʜᴇʀᴏ♠️, ʜᴇ ᴡɪʟʟ ʀᴇsᴘᴏɴᴅ sᴏᴏɴ..",
+            color=0x000000
         )
-        embed.add_field(
-            name="🎲 Want to play some BlackJack?",
-            value="Use `&casino` to start a session and track your games!",
-            inline=False
-        )
-        embed.set_footer(text="♠️ ʟᴏʟᴇᴛᴛᴀɴ | Always watching for casino opportunities!")
         
         await message.channel.send(embed=embed)
 
