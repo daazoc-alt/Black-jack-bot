@@ -81,6 +81,42 @@ async def on_ready():
     bot.add_view(GameView(0))  # Default instance
     print("Persistent views added for casino system!")
 
+@bot.event
+async def on_message(message):
+    """Handle messages and respond to mentions."""
+    # Ignore messages from the bot itself
+    if message.author == bot.user:
+        return
+
+    # Check if the bot is mentioned
+    if bot.user in message.mentions:
+        embed = discord.Embed(
+            title="👋 Hey there!",
+            description="**ʟᴏʟᴇᴛᴛᴀɴ BlackJack Casino Bot**\n\nI'm here to help you track your BlackJack sessions!",
+            color=0xffd700
+        )
+        embed.add_field(
+            name="🎰 Quick Start",
+            value="Use `&casino` to open the casino interface and start tracking your games!",
+            inline=False
+        )
+        embed.add_field(
+            name="📊 Features",
+            value="• Session tracking with statistics\n• Win/loss analysis with charts\n• Side bets support\n• Split & double down tracking",
+            inline=False
+        )
+        embed.add_field(
+            name="❓ Need Help?",
+            value="Use `&help` for a complete list of commands!",
+            inline=False
+        )
+        embed.set_footer(text="♠️ Professional BlackJack Statistics Tracker")
+        
+        await message.channel.send(embed=embed)
+
+    # Process commands
+    await bot.process_commands(message)
+
 # =================================================================================================
 # CASINO SYSTEM - BlackJack Statistics Tracker
 # =================================================================================================
