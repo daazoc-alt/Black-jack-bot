@@ -114,6 +114,33 @@ async def on_message(message):
         
         await message.channel.send(embed=embed)
 
+    # Check if any other members are mentioned (excluding the bot)
+    other_mentions = [mention for mention in message.mentions if mention != bot.user]
+    if other_mentions:
+        mentioned_members = []
+        for member in other_mentions:
+            mentioned_members.append(f"**{member.display_name}** ({member.mention})")
+        
+        if len(mentioned_members) == 1:
+            description = f"👀 I noticed {mentioned_members[0]} was mentioned!\n\n🎰 **ʟᴏʟᴇᴛᴛᴀɴ Casino** is here if you want to track some BlackJack games together!"
+        else:
+            member_list = ", ".join(mentioned_members[:-1]) + f" and {mentioned_members[-1]}"
+            description = f"👀 I noticed {member_list} were mentioned!\n\n🎰 **ʟᴏʟᴇᴛᴛᴀɴ Casino** is here if you want to track some BlackJack games together!"
+        
+        embed = discord.Embed(
+            title="💬 Member Mention Detected!",
+            description=description,
+            color=0x00ff41
+        )
+        embed.add_field(
+            name="🎲 Want to play some BlackJack?",
+            value="Use `&casino` to start a session and track your games!",
+            inline=False
+        )
+        embed.set_footer(text="♠️ ʟᴏʟᴇᴛᴛᴀɴ | Always watching for casino opportunities!")
+        
+        await message.channel.send(embed=embed)
+
     # Process commands
     await bot.process_commands(message)
 
