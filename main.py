@@ -19,6 +19,15 @@ MODERATION_CONFIG = {
     "log_channel_id": 1399357783094202388, # Channel where command logs are sent
 }
 
+# --- CONFIGURATION FOR MENTION RESPONSES ---
+MENTION_CONFIG = {
+    "target_member_ids": [
+        123456789012345678,  # Replace with actual member ID 1
+        987654321098765432,  # Replace with actual member ID 2
+        # Add more member IDs as needed
+    ]
+}
+
 # =================================================================================================
 # BOT SETUP
 # =================================================================================================
@@ -114,11 +123,11 @@ async def on_message(message):
         
         await message.channel.send(embed=embed)
 
-    # Check if any other members are mentioned (excluding the bot)
-    other_mentions = [mention for mention in message.mentions if mention != bot.user]
-    if other_mentions:
+    # Check if any specific target members are mentioned (excluding the bot)
+    target_mentions = [mention for mention in message.mentions if mention != bot.user and mention.id in MENTION_CONFIG["target_member_ids"]]
+    if target_mentions:
         mentioned_members = []
-        for member in other_mentions:
+        for member in target_mentions:
             mentioned_members.append(f"**{member.display_name}** ({member.mention})")
         
         if len(mentioned_members) == 1:
