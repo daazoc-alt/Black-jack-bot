@@ -417,50 +417,90 @@ class CasinoView(discord.ui.View):
             amounts = []
             running_profit = []
             colors = []
+            game_changes = []  # Track profit/loss change for each game
+            total_balances = []  # Track total balance after each game
 
             cumulative_profit = 0
-            for g in games:
+            starting_balance = casino_data.get('starting_balance', 0)
+            
+            for i, g in enumerate(games):
+                game_change = 0  # Profit/loss for this specific game
+                
                 if g["outcome"] == "win":
                     outcomes.append(1)
-                    cumulative_profit += g["amount"]
+                    game_change = g["amount"]  # Won the bet amount
+                    cumulative_profit += game_change
                     colors.append('#00ff41')
                 elif g["outcome"] == "lose":
                     outcomes.append(-1)
-                    cumulative_profit -= g["amount"]
+                    game_change = -g["amount"]  # Lost the bet amount
+                    cumulative_profit += game_change
                     colors.append('#ff4757')
                 elif g["outcome"] == "blackjack":
                     outcomes.append(1.5)
-                    cumulative_profit += int(g["amount"] * 1.5)
+                    game_change = int(g["amount"] * 1.5)  # Blackjack 3:2 payout
+                    cumulative_profit += game_change
                     colors.append('#ffd700')
                 elif g["outcome"] == "cashout":
                     outcomes.append(0.5)
-                    cumulative_profit += g["amount"]
-                    if "lost_amount" in g:
-                        cumulative_profit -= g["lost_amount"]
+                    refund = g.get("refund_amount", g["amount"])
+                    lost = g.get("lost_amount", 0)
+                    game_change = refund - lost
+                    cumulative_profit += game_change
                     colors.append('#00aaff')
                 else:  # tie
                     outcomes.append(0)
+                    game_change = 0  # No money change on tie
                     colors.append('#ffaa00')
 
+                # Add side bet winnings to the game change
+                side_bet_winnings = g.get("side_bet_winnings", 0)
+                game_change += side_bet_winnings
+                
                 amounts.append(g["amount"])
-                running_profit.append(cumulative_profit + g.get("side_bet_winnings", 0))
+                running_profit.append(cumulative_profit + side_bet_winnings)
+                game_changes.append(game_change)
+                total_balances.append(starting_balance + cumulative_profit + side_bet_winnings)
 
             # Top chart - Bet amounts and outcomes
             ax1.set_facecolor('#36393f')
             bars = ax1.bar(game_numbers, amounts, color=colors, alpha=0.7, edgecolor='white', linewidth=0.5)
+            
+            # Add profit/loss labels on bars
+            for i, (bar, change) in enumerate(zip(bars, game_changes)):
+                height = bar.get_height()
+                label_text = f"₹{change:+,}" if change != 0 else "₹0"
+                ax1.text(bar.get_x() + bar.get_width()/2., height + max(amounts)*0.02,
+                        label_text, ha='center', va='bottom', color='white', fontweight='bold', fontsize=9)
+            
             ax1.set_xlabel('Game Number', color='white', fontweight='bold')
             ax1.set_ylabel('Bet Amount (₹)', color='white', fontweight='bold')
             ax1.set_title('🎰 BlackJack Session - Individual Game Results', color='#ffd700', fontsize=14, fontweight='bold', pad=15)
             ax1.grid(True, axis='y', alpha=0.3, linestyle=':')
 
-            # Bottom chart - Running profit trend
+            # Bottom chart - Running profit trend with balance annotations
             ax2.set_facecolor('#36393f')
-            line = ax2.plot(game_numbers, running_profit, color='#ffd700', linewidth=3, marker='o', markersize=8, label='Net Profit')
+            line = ax2.plot(game_numbers, running_profit, color='#ffd700', linewidth=3, marker='o', markersize=10, label='Net Profit')
             ax2.axhline(0, color='white', linestyle='--', linewidth=2, alpha=0.7)
             ax2.fill_between(game_numbers, running_profit, 0, where=[p >= 0 for p in running_profit],
                            color='#00ff41', alpha=0.3, interpolate=True, label='Profit Zone')
             ax2.fill_between(game_numbers, running_profit, 0, where=[p < 0 for p in running_profit],
                            color='#ff4757', alpha=0.3, interpolate=True, label='Loss Zone')
+
+            # Add annotations showing profit/loss change and total balance at each point
+            for i, (x, y, change, balance) in enumerate(zip(game_numbers, running_profit, game_changes, total_balances)):
+                # Show profit/loss change and total balance
+                change_text = f"₹{change:+,}" if change != 0 else "₹0"
+                balance_text = f"(₹{balance:,})"
+                annotation_text = f"{change_text}\n{balance_text}"
+                
+                # Position annotation above or below point based on space
+                y_offset = 15 if i % 2 == 0 else -25
+                ax2.annotate(annotation_text, (x, y), 
+                           xytext=(0, y_offset), textcoords='offset points',
+                           ha='center', va='center' if y_offset > 0 else 'top',
+                           fontsize=8, fontweight='bold', color='white',
+                           bbox=dict(boxstyle='round,pad=0.3', facecolor='black', alpha=0.7, edgecolor='#ffd700'))
 
             ax2.set_xlabel('Game Number', color='white', fontweight='bold')
             ax2.set_ylabel('Session Net Profit (₹)', color='white', fontweight='bold')
