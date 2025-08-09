@@ -58,7 +58,7 @@ async def log_command(ctx, command_name, details=""):
             embed.add_field(name="Channel", value=ctx.channel.mention, inline=True)
             if details:
                 embed.add_field(name="Details", value=details, inline=False)
-            embed.set_footer(text="♠️ Casino Bot Logs")
+            embed.set_footer(text="♠️ ʟᴏʟᴇᴛᴛᴀɴ Logs")
 
             await log_channel.send(embed=embed)
             print(f"✅ Logged command: {command_name} by {ctx.author}")
@@ -74,7 +74,7 @@ async def log_command(ctx, command_name, details=""):
 @bot.event
 async def on_ready():
     """Prints a message to the console when the bot is online and adds persistent views."""
-    print(f'Casino Bot {bot.user} is online and ready! 🚀')
+    print(f'ʟᴏʟᴇᴛᴛᴀɴ {bot.user} is online and ready! 🚀')
 
     # Add persistent views
     bot.add_view(CasinoView())
@@ -913,7 +913,7 @@ async def reset_balance_command(ctx, member: discord.Member, amount: int):
 async def help_command(ctx):
     """Display help information for casino commands."""
     embed = discord.Embed(
-        title="♠️ BlackJack Casino Bot - Help",
+        title="♠️ ʟᴏʟᴇᴛᴛᴀɴ - Help",
         description="**Premium Discord Bot for BlackJack Statistics Tracking**",
         color=0x000000
     )
@@ -958,7 +958,7 @@ if __name__ == "__main__":
     else:
         # Run the bot
         try:
-            print("🚀 Starting Casino Bot...")
+            print("🚀 Starting ʟᴏʟᴇᴛᴛᴀɴ...")
             bot.run(TOKEN)
         except Exception as e:
             print(f"❌ Error starting bot: {e}")
